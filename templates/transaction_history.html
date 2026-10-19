@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - ChaloPay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8B5CF6;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            color: #A78BFA;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #E9D5FF;
+            color: #8B5CF6;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: #D6BCFA;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #8B5CF6;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #E9D5FF;
+            background: white;
+            color: #8B5CF6;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #F0F4FF;
+        }
+
+        .filter-btn.active {
+            background: #8B5CF6;
+            color: white;
+            border-color: #8B5CF6;
+        }
+
+        .transaction-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .transaction-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .transaction-left {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .transaction-icon {
+            font-size: 32px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #F0F4FF;
+            border-radius: 50%;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-type {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .transaction-upi {
+            color: #999;
+            font-size: 13px;
+        }
+
+        .transaction-right {
+            text-align: right;
+        }
+
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .amount-sent {
+            color: #DC2626;
+        }
+
+        .amount-received {
+            color: #27AE60;
+        }
+
+        .transaction-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            background: white;
+            padding: 50px;
+            border-radius: 10px;
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #8B5CF6;
+            padding: 50px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E9D5FF;
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            color: #8B5CF6;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .transaction-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .transaction-left {
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            .transaction-right {
+                text-align: center;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <a href="/" class="logo">Chalo<span>Pay</span></a>
+        <a href="/dashboard" class="back-btn">← Back</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header with Filters -->
+        <div class="header">
+            <h1>📊 Transaction History</h1>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterTransactions('all')">All</button>
+                <button class="filter-btn" onclick="filterTransactions('sent')">Sent</button>
+                <button class="filter-btn" onclick="filterTransactions('received')">Received</button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-card" id="summaryCard" style="display: none;">
+            <div class="summary-item">
+                <div class="summary-label">Total Sent</div>
+                <div class="summary-value">₹<span id="totalSent">0</span></div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Received</div>
+                <div class="summary-value">₹<span id="totalReceived">0</span></div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Transactions</div>
+                <div class="summary-value"><span id="totalCount">0</span></div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMsg" class="error" style="display: none;"></div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px;">Loading transactions...</p>
+        </div>
+
+        <!-- Transactions List -->
+        <div id="transactionsList" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let allTransactions = [];
+        let currentFilter = 'all';
+
+        // Check JWT and load transactions
+        window.addEventListener('load', async () => {
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            await loadTransactions(token);
+        });
+
+        async function loadTransactions(token) {
+            try {
+                const response = await fetch(`${API_BASE}/transaction/history?filter_by=all`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    allTransactions = data.transactions || [];
+                    
+                    // Load summary
+                    await loadSummary(token);
+                    
+                    // Hide loading, show transactions
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('transactionsList').style.display = 'block';
+                    document.getElementById('summaryCard').style.display = 'grid';
+
+                    displayTransactions(allTransactions);
+                } else {
+                    throw new Error(data.error || 'Failed to load transactions');
+                }
+            } catch (error) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorMsg').textContent = '❌ Error: ' + error.message;
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        }
+
+        async function loadSummary(token) {
+            try {
+                const response = await fetch(`${API_BASE}/transaction/summary`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('totalSent').textContent = data.total_sent.toFixed(2);
+                    document.getElementById('totalReceived').textContent = data.total_received.toFixed(2);
+                    document.getElementById('totalCount').textContent = (data.total_transactions_sent + data.total_transactions_received);
+                }
+            } catch (error) {
+                console.error('Error loading summary:', error);
+            }
+        }
+
+        function filterTransactions(type) {
+            currentFilter = type;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Filter and display
+            let filtered = allTransactions;
+            if (type !== 'all') {
+                filtered = allTransactions.filter(txn => txn.type === type);
+            }
+
+            displayTransactions(filtered);
+        }
+
+        function displayTransactions(transactions) {
+            const container = document.getElementById('transactionsList');
+
+            if (transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>No Transactions</h3>
+                        <p>You haven't made any transactions yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = transactions.map(txn => {
+                const date = new Date(txn.timestamp);
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                const isSent = txn.type === 'sent';
+                
+                return `
+                    <div class="transaction-card">
+                        <div class="transaction-left">
+                            <div class="transaction-icon">
+                                ${isSent ? '📤' : '📥'}
+                            </div>
+                            <div class="transaction-info">
+                                <div class="transaction-type">
+                                    ${isSent ? 'Sent to' : 'Received from'} ${txn.other_party_name}
+                                </div>
+                                <div class="transaction-upi">${txn.other_party_upi}</div>
+                                ${txn.description ? `<div class="transaction-upi" style="margin-top: 5px; color: #666; font-size: 12px;">📝 ${txn.description}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="transaction-right">
+                            <div class="transaction-amount ${isSent ? 'amount-sent' : 'amount-received'}">
+                                ${isSent ? '- ₹' : '+ ₹'}${txn.amount.toFixed(2)}
+                            </div>
+                            <div class="transaction-date">${formattedDate}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

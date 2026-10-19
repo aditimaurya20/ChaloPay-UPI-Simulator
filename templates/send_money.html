@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Money - ChaloPay</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 40px;
+        }
+        .logo { font-size: 24px; font-weight: bold; color: #8B5CF6; text-decoration: none; }
+        .logo span { color: #A78BFA; }
+        .back-btn {
+            padding: 8px 16px; background: #E9D5FF; color: #8B5CF6;
+            border: none; border-radius: 5px; font-weight: bold;
+            text-decoration: none; display: inline-block;
+        }
+        .back-btn:hover { background: #D6BCFA; color: #8B5CF6; }
+        .main-card {
+            background: white; padding: 40px; border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 450px; width: 100%;
+        }
+        .main-card h1 { text-align: center; color: #8B5CF6; margin-bottom: 10px; font-size: 28px; }
+        .form-label { font-weight: bold; color: #333; }
+        .form-control { border: 2px solid #E9D5FF; border-radius: 5px; padding: 12px; }
+        .form-control:focus { border-color: #8B5CF6; box-shadow: 0 0 0 0.2rem rgba(139,92,246,0.15); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        .btn-chalopay {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            color: white; border: none; border-radius: 5px;
+            font-size: 16px; font-weight: bold; transition: transform 0.2s;
+        }
+        .btn-chalopay:hover { transform: scale(1.02); color: white; }
+        .btn-chalopay:disabled { opacity: 0.6; cursor: not-allowed; }
+        .balance-box {
+            background: #F0F4FF; padding: 15px; border-radius: 8px;
+            border-left: 4px solid #8B5CF6; margin-bottom: 25px;
+        }
+        .balance-label { color: #999; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .balance-value { color: #27AE60; font-size: 24px; font-weight: bold; margin-top: 5px; }
+        .your-upi { color: #999; font-size: 12px; margin-top: 5px; }
+        .success-details {
+            background: #F0FDF4; padding: 15px; border-radius: 5px;
+            margin-top: 10px; font-size: 13px; line-height: 1.8;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+    <nav class="navbar-custom d-flex justify-content-between align-items-center">
+        <a href="/" class="logo">Chalo<span>Pay</span></a>
+        <a href="/dashboard" class="back-btn">← Back</a>
+    </nav>
+
+    <div class="d-flex justify-content-center align-items-center flex-grow-1 p-3">
+        <div class="main-card">
+            <h1>💸 Send Money</h1>
+            <p class="text-center text-muted mb-4">Transfer funds to another UPI ID</p>
+
+            <!-- Balance Box -->
+            <div class="balance-box">
+                <div class="balance-label">Your Balance</div>
+                <div class="balance-value">Rs. <span id="userBalance">0.00</span></div>
+                <div class="your-upi">Your UPI: <strong id="userUPI">Loading...</strong></div>
+            </div>
+
+            <div id="errorMsg" class="alert alert-danger d-none"></div>
+            <div id="successMsg" class="alert alert-success d-none"></div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-4">
+                <div class="spinner-border" style="color: #8B5CF6;" role="status"></div>
+                <p class="mt-2 text-muted">Loading account...</p>
+            </div>
+
+            <!-- Form -->
+            <form id="sendMoneyForm" class="d-none">
+                <div class="mb-3">
+                    <label for="receiverUPI" class="form-label">Receiver UPI ID:</label>
+                    <input type="text" class="form-control" id="receiverUPI"
+                        placeholder="e.g. rahul@chalopay" required>
+                </div>
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Amount (Rs.):</label>
+                    <input type="number" class="form-control" id="amount"
+                        placeholder="0.00" min="1" step="0.01" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description (Optional):</label>
+                    <textarea class="form-control" id="description"
+                        placeholder="Add a note e.g. Lunch money, Rent"></textarea>
+                </div>
+                <button type="submit" class="btn btn-chalopay" id="submitBtn">Send Money</button>
+                <div class="text-center mt-3 d-none" id="loading">
+                    <div class="spinner-border" style="color: #8B5CF6;" role="status"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        window.addEventListener('load', async () => {
+            const token = localStorage.getItem('access_token');
+            if (!token) { window.location.href = '/login'; return; }
+            await loadAccountData(token);
+        });
+
+        async function loadAccountData(token) {
+            try {
+                const response = await fetch(`${API_BASE}/account/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+
+                if (response.ok && data.account) {
+                    document.getElementById('loadingState').classList.add('d-none');
+                    document.getElementById('sendMoneyForm').classList.remove('d-none');
+                    document.getElementById('userBalance').textContent = data.account.balance.toFixed(2);
+                    document.getElementById('userUPI').textContent = data.account.upi_id;
+
+                    if (data.account.is_frozen) {
+                        const errorMsg = document.getElementById('errorMsg');
+                        errorMsg.textContent = '❌ Your account is frozen. Please contact admin.';
+                        errorMsg.classList.remove('d-none');
+                        document.getElementById('sendMoneyForm').classList.add('d-none');
+                    }
+                } else {
+                    throw new Error('No UPI account found. Please create one first.');
+                }
+            } catch (error) {
+                document.getElementById('loadingState').classList.add('d-none');
+                const errorMsg = document.getElementById('errorMsg');
+                errorMsg.textContent = '❌ ' + error.message;
+                errorMsg.classList.remove('d-none');
+            }
+        }
+
+        document.getElementById('sendMoneyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('access_token');
+            const receiverUPI = document.getElementById('receiverUPI').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const description = document.getElementById('description').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const form = document.getElementById('sendMoneyForm');
+
+            errorMsg.classList.add('d-none');
+            successMsg.classList.add('d-none');
+
+            if (amount <= 0) {
+                errorMsg.textContent = '❌ Amount must be greater than 0!';
+                errorMsg.classList.remove('d-none');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.remove('d-none');
+
+            try {
+                const response = await fetch(`${API_BASE}/transaction/send`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiver_upi: receiverUPI, amount, description })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    form.classList.add('d-none');
+                    successMsg.innerHTML = `
+                        ✅ <strong>Money Sent Successfully!</strong>
+                        <div class="success-details">
+                            Transaction ID: ${data.transaction_id}<br>
+                            Receiver: ${data.receiver_upi}<br>
+                            Amount: Rs. ${data.amount.toFixed(2)}<br>
+                            New Balance: Rs. ${data.sender_balance.toFixed(2)}<br>
+                            Daily Limit Remaining: Rs. ${data.daily_limit_remaining.toFixed(2)}<br>
+                            <strong>Redirecting to dashboard in 3 seconds...</strong>
+                        </div>`;
+                    successMsg.classList.remove('d-none');
+                    setTimeout(() => window.location.href = '/dashboard', 3000);
+                } else {
+                    errorMsg.textContent = '❌ ' + (data.error || 'Transaction failed');
+                    errorMsg.classList.remove('d-none');
+                    submitBtn.disabled = false;
+                    loading.classList.add('d-none');
+                }
+            } catch (error) {
+                errorMsg.textContent = '❌ Error: ' + error.message;
+                errorMsg.classList.remove('d-none');
+                submitBtn.disabled = false;
+                loading.classList.add('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

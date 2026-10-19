@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ChaloPay - Digital Payments Platform</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+        body{
+            background:#F8F5FF;
+            font-family:Arial,sans-serif;
+        }
+
+        .navbar{
+            background:white;
+            box-shadow:0 2px 10px rgba(0,0,0,.08);
+        }
+
+        .logo{
+            font-size:30px;
+            font-weight:bold;
+            color:#8B5CF6;
+            text-decoration:none;
+        }
+
+        .logo span{
+            color:#A78BFA;
+        }
+
+        .hero{
+            padding:90px 20px;
+        }
+
+        .hero h1{
+            font-size:55px;
+            font-weight:700;
+            color:#4C1D95;
+        }
+
+        .hero p{
+            font-size:20px;
+            color:#555;
+            margin-top:20px;
+        }
+
+        .btn-purple{
+            background:#8B5CF6;
+            color:white;
+            padding:12px 28px;
+            border:none;
+            border-radius: 50px;
+        }
+
+        .btn-purple:hover{
+            background:#7C3AED;
+            color:white;
+        }
+
+        .btn-outline-purple{
+            border:2px solid #8B5CF6;
+            color:#8B5CF6;
+            border-radius: 50px;
+        }
+
+        .btn-outline-purple:hover{
+            background:#8B5CF6;
+            color:white;
+        }
+
+        .card{
+            border:none;
+            border-radius:18px;
+            box-shadow:0 10px 20px rgba(0,0,0,.08);
+            transition:.3s;
+            height:100%;
+
+        }
+
+        .card:hover{
+            transform:translateY(-8px);
+        }
+
+        .icon{
+            font-size:45px;
+        }
+
+        .section-title{
+            color:#4C1D95;
+            font-weight:bold;
+        }
+
+        footer{
+            background:#8B5CF6;
+            color:white;
+            padding:20px;
+            margin-top:80px;
+        }
+
+        .hero img{
+        animation:float 3s ease-in-out infinite;
+        }
+
+        @keyframes float{
+            0%{transform:translateY(0);}
+            50%{transform:translateY(-12px);}
+            100%{transform:translateY(0);}
+        }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="logo" href="#">Chalo<span>Pay</span></a>
+                <div>
+                    <a href="/login" class="btn btn-outline-purple me-2">Login</a>
+                    <a href="/register" class="btn btn-purple">Register</a>
+                </div>
+            </div>
+        </nav>
+        <div class="container hero">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1>Secure Digital Payments for Everyone</h1>
+                    <p>
+                    Transfer money securely in seconds using a UPI-inspired
+                    payment platform built with Flask, PostgreSQL and JWT Authentication.
+                    </p>
+                    <div class="mt-4">
+                        <a href="/register" class="btn btn-purple me-3">Get Started</a>
+                        <a href="/login" class="btn btn-outline-purple">Login</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" width="380">
+                </div>
+            </div>
+        </div>
+        <div class="container text-center mt-5">
+            <h2 class="section-title mb-5">Features</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card p-4">
+                        <div class="icon">💸</div>
+                        <h4>Instant Transfer</h4>
+                        <p>Transfer money between users instantly.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-4">
+                        <div class="icon">🔒</div>
+                        <h4>Secure Login</h4>
+                        <p>JWT authentication with encrypted passwords.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-4">
+                        <div class="icon">📱</div>
+                        <h4>QR Payments</h4>
+                        <p>Generate QR codes for quick payments.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-4">
+                        <div class="icon">📊</div>
+                        <h4>History</h4>
+                        <p>Track every transaction made.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container text-center mt-5">
+            <h2 class="section-title mb-5">How It Works</h2>
+            <div class="row">
+                <div class="col-md-3">
+                    <h1>1️⃣</h1>
+                    <h5>Register</h5>
+                </div>
+                <div class="col-md-3">
+                    <h1>2️⃣</h1>
+                    <h5>Create Account</h5>
+                </div>
+                <div class="col-md-3">
+                    <h1>3️⃣</h1>
+                    <h5>Add Balance</h5>
+                </div>
+                <div class="col-md-3">
+                    <h1>4️⃣</h1>
+                    <h5>Send Money</h5>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-5 text-center">
+
+            <h2 class="section-title mb-4">
+            Why Choose ChaloPay?
+            </h2>
+
+            <div class="row">
+
+            <div class="col-md-4">
+            <h4>⚡ Fast</h4>
+            <p>Complete transactions in seconds.</p>
+            </div>
+
+            <div class="col-md-4">
+            <h4>🛡 Secure</h4>
+            <p>JWT Authentication with encrypted passwords.</p>
+            </div>
+
+            <div class="col-md-4">
+            <h4>📈 Reliable</h4>
+            <p>Transaction history and account management in one place.</p>
+            </div>
+
+            </div>
+
+            </div>
+        <footer class="text-center">
+            <h4>ChaloPay</h4>
+            <p>AI-inspired Digital Payment Platform using Flask, PostgreSQL, JWT & Bootstrap.</p>
+            <p>Designed & Developed by Aditi Maurya</p>
+            <p>© 2026 ChaloPay. All Rights Reserved.</p>
+        </footer>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

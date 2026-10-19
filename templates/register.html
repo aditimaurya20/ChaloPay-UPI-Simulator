@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ChaloPay</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 40px;
+        }
+        .logo { font-size: 24px; font-weight: bold; color: #8B5CF6; text-decoration: none; }
+        .logo span { color: #A78BFA; }
+        .auth-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        .auth-card h1 { text-align: center; color: #8B5CF6; margin-bottom: 30px; font-size: 28px; }
+        .form-label { font-weight: bold; color: #333; }
+        .form-control { border: 2px solid #E9D5FF; border-radius: 5px; padding: 12px; }
+        .form-control:focus { border-color: #8B5CF6; box-shadow: 0 0 0 0.2rem rgba(139,92,246,0.15); }
+        .btn-chalopay {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            color: white; border: none; border-radius: 5px;
+            font-size: 16px; font-weight: bold; transition: transform 0.2s;
+        }
+        .btn-chalopay:hover { transform: scale(1.02); color: white; }
+        .btn-chalopay:disabled { opacity: 0.6; cursor: not-allowed; }
+        .link-purple { color: #8B5CF6; text-decoration: none; font-weight: bold; }
+        .link-purple:hover { color: #A78BFA; }
+    </style>
+</head>
+<body class="d-flex flex-column">
+    <nav class="navbar-custom d-flex align-items-center">
+        <a href="/" class="logo">Chalo<span>Pay</span></a>
+    </nav>
+
+    <div class="d-flex justify-content-center align-items-center flex-grow-1 p-3">
+        <div class="auth-card">
+            <h1>👤 Register</h1>
+
+            <div id="errorMsg" class="alert alert-danger d-none"></div>
+            <div id="successMsg" class="alert alert-success d-none"></div>
+
+            <form id="registerForm">
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Full Name:</label>
+                    <input type="text" class="form-control" id="fullName" placeholder="Enter your full name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password:</label>
+                    <input type="password" class="form-control" id="password" placeholder="Minimum 6 characters" required minlength="6">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password:</label>
+                    <input type="password" class="form-control" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-chalopay" id="submitBtn">Register</button>
+                <div class="text-center mt-3 d-none" id="loading">
+                    <div class="spinner-border" style="color: #8B5CF6;" role="status"></div>
+                </div>
+            </form>
+
+            <div class="text-center mt-4">
+                Already have an account? <a href="/login" class="link-purple">Login here</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+
+            errorMsg.classList.add('d-none');
+            successMsg.classList.add('d-none');
+
+            if (password !== confirmPassword) {
+                errorMsg.textContent = '❌ Passwords do not match!';
+                errorMsg.classList.remove('d-none');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.remove('d-none');
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ full_name: fullName, email, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    successMsg.textContent = '✅ Registration successful! Redirecting to login...';
+                    successMsg.classList.remove('d-none');
+                    document.getElementById('registerForm').reset();
+                    setTimeout(() => window.location.href = '/login', 2000);
+                } else {
+                    errorMsg.textContent = '❌ ' + (data.error || 'Registration failed. Please try again.');
+                    errorMsg.classList.remove('d-none');
+                    submitBtn.disabled = false;
+                    loading.classList.add('d-none');
+                }
+            } catch (error) {
+                errorMsg.textContent = '❌ Error: ' + error.message + '. Make sure Flask is running on localhost:5000';
+                errorMsg.classList.remove('d-none');
+                submitBtn.disabled = false;
+                loading.classList.add('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

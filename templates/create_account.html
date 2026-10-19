@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - ChaloPay</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 40px;
+        }
+        .logo { font-size: 24px; font-weight: bold; color: #8B5CF6; text-decoration: none; }
+        .logo span { color: #A78BFA; }
+        .auth-card {
+            background: white; padding: 40px; border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; width: 100%;
+        }
+        .auth-card h1 { text-align: center; color: #8B5CF6; margin-bottom: 20px; font-size: 28px; }
+        .form-label { font-weight: bold; color: #333; }
+        .form-control { border: 2px solid #E9D5FF; border-radius: 5px; padding: 12px; }
+        .form-control:focus { border-color: #8B5CF6; box-shadow: 0 0 0 0.2rem rgba(139,92,246,0.15); }
+        .btn-chalopay {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            color: white; border: none; border-radius: 5px;
+            font-size: 16px; font-weight: bold; transition: transform 0.2s;
+        }
+        .btn-chalopay:hover { transform: scale(1.02); color: white; }
+        .btn-chalopay:disabled { opacity: 0.6; cursor: not-allowed; }
+        .link-purple { color: #8B5CF6; text-decoration: none; font-weight: bold; }
+        .link-purple:hover { color: #A78BFA; }
+        .info-box {
+            background: #F0F4FF; padding: 15px; border-radius: 5px;
+            border-left: 4px solid #8B5CF6; font-size: 13px; color: #333; line-height: 1.6;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+    <nav class="navbar-custom d-flex align-items-center">
+        <a href="/" class="logo">Chalo<span>Pay</span></a>
+    </nav>
+
+    <div class="d-flex justify-content-center align-items-center flex-grow-1 p-3">
+        <div class="auth-card">
+            <h1>💳 Create Account</h1>
+
+            <div class="info-box mb-4">
+                <strong>📱 Mobile Number:</strong> Enter your 10-digit mobile number.
+                Your UPI ID (<strong>@chalopay</strong>) will be automatically generated!
+            </div>
+
+            <div id="errorMsg" class="alert alert-danger d-none"></div>
+            <div id="successMsg" class="alert alert-success d-none"></div>
+
+            <form id="createAccountForm">
+                <div class="mb-3">
+                    <label for="mobileNumber" class="form-label">Mobile Number:</label>
+                    <input type="tel" class="form-control" id="mobileNumber"
+                        placeholder="10-digit mobile number" maxlength="10" required>
+                </div>
+                <button type="submit" class="btn btn-chalopay" id="submitBtn">Create UPI Account</button>
+                <div class="text-center mt-3 d-none" id="loading">
+                    <div class="spinner-border" style="color: #8B5CF6;" role="status"></div>
+                </div>
+            </form>
+
+            <div class="text-center mt-4">
+                <a href="/dashboard" class="link-purple">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('access_token');
+            if (!token) window.location.href = '/login';
+        });
+
+        document.getElementById('mobileNumber').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        document.getElementById('createAccountForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            const token = localStorage.getItem('access_token');
+            const errorMsg = document.getElementById('errorMsg');
+            const successMsg = document.getElementById('successMsg');
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+
+            errorMsg.classList.add('d-none');
+            successMsg.classList.add('d-none');
+
+            if (mobileNumber.length !== 10) {
+                errorMsg.textContent = '❌ Mobile number must be exactly 10 digits!';
+                errorMsg.classList.remove('d-none');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            loading.classList.remove('d-none');
+
+            try {
+                const response = await fetch(`${API_BASE}/account/create`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile_number: mobileNumber })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    successMsg.innerHTML = `✅ <strong>Account Created!</strong><br>
+                        Your UPI ID: <strong>${data.upi_id}</strong><br>
+                        Redirecting to dashboard...`;
+                    successMsg.classList.remove('d-none');
+                    setTimeout(() => window.location.href = '/dashboard', 2000);
+                } else {
+                    errorMsg.textContent = '❌ ' + (data.error || 'Failed to create account');
+                    errorMsg.classList.remove('d-none');
+                    submitBtn.disabled = false;
+                    loading.classList.add('d-none');
+                }
+            } catch (error) {
+                errorMsg.textContent = '❌ Error: ' + error.message;
+                errorMsg.classList.remove('d-none');
+                submitBtn.disabled = false;
+                loading.classList.add('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

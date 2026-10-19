@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - ChaloPay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8B5CF6;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            color: #A78BFA;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #E9D5FF;
+            color: #8B5CF6;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: #D6BCFA;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: #8B5CF6;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: 2px solid #E9D5FF;
+            background: white;
+            color: #8B5CF6;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            background: #F0F4FF;
+        }
+
+        .tab-btn.active {
+            background: #8B5CF6;
+            color: white;
+            border-color: #8B5CF6;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #F0F4FF;
+            color: #8B5CF6;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #E9D5FF;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #E9D5FF;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #F9F7FF;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-frozen {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+            margin-right: 5px;
+        }
+
+        .btn-freeze {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .btn-freeze:hover {
+            background: #FCA5A5;
+        }
+
+        .btn-unfreeze {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .btn-unfreeze:hover {
+            background: #A7F3D0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #8B5CF6;
+            padding: 50px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E9D5FF;
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            padding: 50px;
+            text-align: center;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <a href="/" class="logo">Vault<span>Pay</span></a>
+        <a href="\dashboard" class="back-btn">← Back</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚙️ Admin Panel</h1>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('users')">👥 Users</button>
+                <button class="tab-btn" onclick="switchTab('accounts')">💳 Accounts</button>
+                <button class="tab-btn" onclick="switchTab('transactions')">📊 Transactions</button>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMsg" class="error" style="display: none;"></div>
+        <div id="successMsg" class="success" style="display: none;"></div>
+
+        <!-- Users Tab -->
+        <div id="users" class="tab-content active">
+            <div id="usersLoading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px;">Loading users...</p>
+            </div>
+            <div id="usersTable" style="display: none;"></div>
+        </div>
+
+        <!-- Accounts Tab -->
+        <div id="accounts" class="tab-content">
+            <div id="accountsLoading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px;">Loading accounts...</p>
+            </div>
+            <div id="accountsTable" style="display: none;"></div>
+        </div>
+
+        <!-- Transactions Tab -->
+        <div id="transactions" class="tab-content">
+            <div id="transactionsLoading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px;">Loading transactions...</p>
+            </div>
+            <div id="transactionsTable" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let token = '';
+
+        // Check JWT and load admin data
+        window.addEventListener('load', async () => {
+            token = localStorage.getItem('access_token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token || user.role !== 'admin') {
+                window.location.href = '/dashboard';
+                return;
+            }
+
+            await loadUsers();
+            await loadAccounts();
+            await loadTransactions();
+        });
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayUsers(data.users);
+                } else {
+                    throw new Error(data.error || 'Failed to load users');
+                }
+            } catch (error) {
+                document.getElementById('usersLoading').style.display = 'none';
+                showError('Failed to load users: ' + error.message);
+            }
+        }
+
+        async function loadAccounts() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/accounts`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayAccounts(data.accounts);
+                } else {
+                    throw new Error(data.error || 'Failed to load accounts');
+                }
+            } catch (error) {
+                document.getElementById('accountsLoading').style.display = 'none';
+                showError('Failed to load accounts: ' + error.message);
+            }
+        }
+
+        async function loadTransactions() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/transactions`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayTransactions(data.transactions);
+                } else {
+                    throw new Error(data.error || 'Failed to load transactions');
+                }
+            } catch (error) {
+                document.getElementById('transactionsLoading').style.display = 'none';
+                showError('Failed to load transactions: ' + error.message);
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersTable');
+            const loading = document.getElementById('usersLoading');
+
+            const html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Has Account</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr>
+                                    <td>${user.full_name}</td>
+                                    <td>${user.email}</td>
+                                    <td><span class="status-badge" style="background: #E0E7FF; color: #3730A3;">${user.role}</span></td>
+                                    <td>${user.has_account ? '✅ Yes' : '❌ No'}</td>
+                                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            loading.style.display = 'none';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        function displayAccounts(accounts) {
+            const container = document.getElementById('accountsTable');
+            const loading = document.getElementById('accountsLoading');
+
+            const html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>UPI ID</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${accounts.map(account => `
+                                <tr>
+                                    <td>${account.user_name}</td>
+                                    <td>${account.upi_id}</td>
+                                    <td>₹${account.balance.toFixed(2)}</td>
+                                    <td><span class="status-badge ${account.is_frozen ? 'status-frozen' : 'status-active'}">
+                                        ${account.is_frozen ? '🔒 Frozen' : '✅ Active'}
+                                    </span></td>
+                                    <td>
+                                        ${account.is_frozen ? 
+                                            `<button class="action-btn btn-unfreeze" onclick="unfreezeAccount(${account.account_id})">Unfreeze</button>` :
+                                            `<button class="action-btn btn-freeze" onclick="freezeAccount(${account.account_id})">Freeze</button>`
+                                        }
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            loading.style.display = 'none';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        function displayTransactions(transactions) {
+            const container = document.getElementById('transactionsTable');
+            const loading = document.getElementById('transactionsLoading');
+
+            const html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${transactions.map(txn => `
+                                <tr>
+                                    <td>${txn.sender_upi}</td>
+                                    <td>${txn.receiver_upi}</td>
+                                    <td>₹${txn.amount.toFixed(2)}</td>
+                                    <td><span class="status-badge status-active">${txn.status}</span></td>
+                                    <td>${new Date(txn.timestamp).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            loading.style.display = 'none';
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        async function freezeAccount(accountId) {
+            if (!confirm('Are you sure you want to freeze this account?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/accounts/${accountId}/freeze`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Account frozen successfully!');
+                    await loadAccounts();
+                } else {
+                    showError(data.error || 'Failed to freeze account');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function unfreezeAccount(accountId) {
+            if (!confirm('Are you sure you want to unfreeze this account?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/accounts/${accountId}/unfreeze`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess('Account unfrozen successfully!');
+                    await loadAccounts();
+                } else {
+                    showError(data.error || 'Failed to unfreeze account');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = '❌ ' + message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMsg');
+            successMsg.textContent = '✅ ' + message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

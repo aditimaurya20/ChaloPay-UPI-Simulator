@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code - ChaloPay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8B5CF6;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            color: #A78BFA;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: #E9D5FF;
+            color: #8B5CF6;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: #D6BCFA;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #8B5CF6;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .upi-info {
+            background: #F0F4FF;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #8B5CF6;
+        }
+
+        .upi-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .upi-value {
+            color: #8B5CF6;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        .qr-container {
+            background: #F9F9F9;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .qr-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #8B5CF6;
+            padding: 40px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #E9D5FF;
+            border-top-color: #8B5CF6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: #E9D5FF;
+            color: #8B5CF6;
+        }
+
+        .btn-secondary:hover {
+            background: #D6BCFA;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #DC2626;
+        }
+
+        .success {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #10B981;
+        }
+
+        .info-box {
+            background: #FEF3C7;
+            padding: 15px;
+            border-radius: 8px;
+            color: #92400E;
+            font-size: 13px;
+            border-left: 4px solid #F59E0B;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <a href="/" class="logo">Chalo<span>Pay</span></a>
+        <a href="/dashboard" class="back-btn">← Back</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <h1>📲 QR Code</h1>
+            <p class="subtitle">Share your UPI QR code for quick payments</p>
+
+            <!-- Error & Success Messages -->
+            <div id="errorMsg" class="error"></div>
+            <div id="successMsg" class="success"></div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 15px;">Generating QR code...</p>
+            </div>
+
+            <!-- QR Code Content -->
+            <div id="qrContent" style="display: none;">
+                <!-- UPI Info -->
+                <div class="upi-info">
+                    <div class="upi-label">Your UPI ID</div>
+                    <div class="upi-value" id="upiId">Loading...</div>
+                </div>
+
+                <!-- QR Code Image -->
+                <div class="qr-container" id="qrContainer">
+                    <img id="qrImage" class="qr-image" alt="QR Code">
+                </div>
+
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="downloadQR()">📥 Download QR</button>
+                    <button class="btn btn-secondary" onclick="copyUPI()">📋 Copy UPI ID</button>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <strong>💡 How to use:</strong><br>
+                    1. Share this QR code with others<br>
+                    2. They can scan it to get your UPI ID<br>
+                    3. Then send you money directly!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = 'http://localhost:5000/api';
+
+    window.addEventListener('load', async () => {
+        const token = localStorage.getItem('access_token');
+
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+
+        await generateQRCode(token);
+    });
+
+    async function generateQRCode(token) {
+        try {
+            const response = await fetch(`${API_BASE}/transaction/qr-code`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('qrContent').style.display = 'block';
+                document.getElementById('qrContainer').style.display = 'block';
+
+                document.getElementById('upiId').textContent = data.upi_id;
+
+                document.getElementById('qrImage').src = data.qr_code_base64;
+            } else {
+                throw new Error(data.error || 'Failed to generate QR code');
+            }
+
+        } catch (error) {
+            document.getElementById('loadingState').style.display = 'none';
+
+            document.getElementById('errorMsg').textContent =
+                '❌ Error: ' + error.message;
+
+            document.getElementById('errorMsg').style.display = 'block';
+        }
+    }
+
+    function downloadQR() {
+        const image = document.getElementById('qrImage');
+
+        const link = document.createElement('a');
+        link.href = image.src;
+        link.download = 'ChaloPay-qr-code.png';
+        link.click();
+
+        const successMsg = document.getElementById('successMsg');
+        successMsg.textContent = '✅ QR code downloaded!';
+        successMsg.style.display = 'block';
+
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 3000);
+    }
+
+    function copyUPI() {
+        const upiText = document.getElementById('upiId').textContent;
+
+        navigator.clipboard.writeText(upiText)
+            .then(() => {
+                const successMsg = document.getElementById('successMsg');
+
+                successMsg.textContent =
+                    '✅ UPI ID copied to clipboard!';
+
+                successMsg.style.display = 'block';
+
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+            })
+            .catch(() => {
+                const errorMsg = document.getElementById('errorMsg');
+
+                errorMsg.textContent =
+                    '❌ Failed to copy UPI ID';
+
+                errorMsg.style.display = 'block';
+            });
+    }
+</script>
+</body>
+</html>
